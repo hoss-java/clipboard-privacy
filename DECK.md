@@ -16,3 +16,42 @@
 > # Reports:
 > *
 > </details>
+
+## 001-0003
+> **Develop a Chrome extension for clipboard privacy** ![status](https://img.shields.io/badge/status-NOT--STARTED-lightgrey)
+> <details >
+>     <summary>Details</summary>
+> The goal of this card is to develop a chrome extension for clipboard privacy.
+> 
+> # DOD (definition of done):
+> An extension is developed
+> All findings are documented.
+> 
+> # TODO:
+> - [ ] 1. Find out how to port Firefox extentions to Chrome
+> - [ ] 2. Develop a Chrome extention
+> - [ ] 3. Port clipboard privacy to the extention
+> - [ ] 4. Document all findings
+> 
+> # Reports:
+> *
+> </details>
+
+## 001-0002
+> **Develop a Firefox plugin for clipboard-privacy.** ![status](https://img.shields.io/badge/status-ONGOING-yellow)
+> <details open>
+>     <summary>Details</summary>
+> The goal of this card is to develop a simple Firefx extension for clipboard privacy.
+> 
+> # DOD (definition of done):
+> An extention is developed and tested.
+> Findings are documented.
+> 
+> # TODO:
+> - [ ] 1. Find how to  develop a simple extension
+> - [ ] 2. Port clipboard privacy to the extention
+> - [ ] 3. Document findings
+> 
+> # Reports:
+> *
+> </details>
