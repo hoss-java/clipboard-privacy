@@ -1,0 +1,23 @@
+#
+# File name : .githook.conf
+# Used by commit-msg
+#
+# Description :
+# -----------------------------------------------------
+# Define the deck file path
+#
+# The script is developed to run from commit-msg as a git hook.
+#
+#
+# 2025 hossjava@osxx.com
+
+# Card link pattern
+deckLinkFlag=true
+deckLinkAddr="https://github.com/hoss-java/$(git rev-parse --show-toplevel)/blob/main/DECK.md#%BOARDID%-%CARDID%"
+
+# Message pattern
+messagePattern='['[bB]*[0-9]-[cC]*[0-9]']'*
+messagePatternErrMsg="A message should be started with a pattern like [B<board-id>-C<card-id>]"
+
+# Add change-Id
+gerritChangeIdFlag=true

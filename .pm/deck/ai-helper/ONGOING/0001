@@ -1,0 +1,22 @@
+---
+#...
+# Git-deck card header
+# OBS! DON'T REMOVE CARD HEADERS
+#...
+Title: Add deck board to repo
+Tags:
+Creator:
+AssignedTo:
+# Time tracker settings
+tartAt:
+EndAt:
+---
+The goal of this card is add git-deck to the repo.
+# DOD (definition of done):
+A board is created.
+
+# TODO:
+- [] 1.
+
+# Reports:
+*
