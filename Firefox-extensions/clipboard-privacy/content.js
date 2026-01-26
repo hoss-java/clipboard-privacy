@@ -1,6 +1,4 @@
 // Load rules from JSON file
-// content.js (or module imported by content script)
-// shared or content.js
 async function loadRules() {
   // Try storage first
   const stored = await browser.storage.local.get("rules");

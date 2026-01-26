@@ -13,7 +13,7 @@
 
 # Card link pattern
 deckLinkFlag=true
-deckLinkAddr="https://github.com/hoss-java/$(git rev-parse --show-toplevel)/blob/main/DECK.md#%BOARDID%-%CARDID%"
+deckLinkAddr="https://github.com/$(git remote get-url origin | sed -n 's%.*[:/]\([^/]\+\)/.*\.git%\1%p')/$(git rev-parse --show-toplevel)/blob/main/DECK.md#%BOARDID%-%CARDID%"
 
 # Message pattern
 messagePattern='['[bB]*[0-9]-[cC]*[0-9]']'*

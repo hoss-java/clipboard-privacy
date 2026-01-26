@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Clipboard Manager",
+  "name": "Clipboard Privacy",
   "version": "1.0",
   "permissions": [
     "activeTab",
@@ -12,7 +12,7 @@
     "persistent": false
   },
   "content_scripts": [{
-    "matches": ["<all_urls>"],  // Restrict this to specific sites in practice
+    "matches": ["<all_urls>"],
     "js": ["content.js"]
   }],
   "icons": {
