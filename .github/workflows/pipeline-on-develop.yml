@@ -1,0 +1,72 @@
+# File pipeline-on-develop.yml
+name: pipeline-on-develop
+
+on:
+  push:
+    branches:
+      - develop  # Commit changes here will trigger the action
+
+permissions:
+  contents: write
+
+jobs:
+  do-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Do merge
+        run: echo "merge work"
+
+  call_generate:
+    needs: do-merge
+    uses: ./.github/workflows/generate-deck.yml
+    with:
+      commit_sha: ${{ github.sha }}
+
+  call_automerge:
+    needs: call_generate
+    uses: ./.github/workflows/auto-merge-changes.yml
+    with:
+      commit_sha: ${{ github.sha }}
+
+  check_directives:
+    needs: call_automerge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout specific branch
+        uses: actions/checkout@v2
+        with:
+          ref: develop  # Explicitly specify the branch
+
+      - name: List files for debugging
+        run: ls -R .github/scripts
+
+      - name: Check commit directives
+        id: check_commit_directives
+        run: |
+          # Make scripts executable
+          chmod +x .github/scripts/git-extract-directives.sh
+
+          # Extract directives from commit message
+          directives=$(.github/scripts/git-extract-directives.sh "${{ github.sha }}")
+          result=$?
+          chmod -x .github/scripts/git-extract-directives.sh
+
+          # Check if the extraction was successful and check for the specific directive
+          if [ "$result" -eq 0 ] && [[ "$directives" == *"--merge"* ]]; then
+            echo "Directive found: --merge"
+            echo "Proceeding to main merge..."
+            echo "merge_action_triggered=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No valid directives found."
+            echo "merge_action_triggered=false" >> "$GITHUB_OUTPUT"
+          fi
+    outputs:
+      should_merge: ${{ steps.check_commit_directives.outputs.merge_action_triggered }}
+  call_mainmerge:
+    needs: check_directives  # Depend on both jobs
+    if: needs.check_directives.outputs.should_merge == 'true'
+    uses: ./.github/workflows/main-merge-changes.yml
+    with:
+      commit_sha: ${{ github.sha }}
+

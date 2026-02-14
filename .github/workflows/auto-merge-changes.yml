@@ -1,0 +1,128 @@
+# File: .github/workflows/auto-merge-changes.yml
+name: auto-merge-changes
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        required: true
+        type: string
+
+permissions: # Add permissions here at the workflow level
+  contents: write
+
+jobs:
+  check-and-merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    env:
+      SOURCE_BRANCH: develop
+      TARGET_BRANCH: main
+      GITMAINAUTO_FILE: .gitmainauto
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repo (fetch all)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2: Set up Bash
+      - name: Set up Bash
+        shell: bash
+        run: echo "Bash is set up"
+
+      # Step 3: Check out requested commit
+      - name: Check out requested commit
+        run: |
+          echo "Requested commit: ${{ inputs.commit_sha }}"
+          git fetch origin develop --unshallow || true
+          git fetch origin develop
+          git fetch --all --tags
+          git checkout --force ${{ inputs.commit_sha }}
+          git rev-parse HEAD
+          git log -1 --oneline
+
+      # Step 4: Debug git state
+      - name: Debug git state
+        run: |
+          git status --short --branch
+          git log -3 --oneline
+
+      # Step 5: Read the list of files and folders
+      - name: Read files list
+        id: readfiles
+        run: |
+          #set -x
+          if [[ -f "${GITMAINAUTO_FILE}" ]]; then
+            FILES_TO_CHECK=$(grep -v '^\s*#' "${GITMAINAUTO_FILE}" | awk '{print $1}' | tr '\n' ' ' | xargs)
+            if [[ -z "$FILES_TO_CHECK" ]]; then
+              echo "No valid files to check!"
+              exit 1
+            fi
+            echo "FILES_TO_CHECK=${FILES_TO_CHECK}" >> $GITHUB_ENV
+          else
+            echo "File list not found!"
+            exit 0
+          fi
+
+      # Step 6: Check for changes in the specified files
+      - name: Auto-check for changes
+        id: check-changes
+        run: |
+          #set -x
+          # Fetch the latest state of both branches
+          git fetch origin ${TARGET_BRANCH}
+          git fetch origin ${SOURCE_BRANCH}
+
+          # Get the list of changed files between the develop branch and the main branch
+          CHANGED_FILES=$(git diff --name-only origin/${TARGET_BRANCH}..origin/${SOURCE_BRANCH})
+
+          # Get the list of files to check
+          if [[ -f "${GITMAINAUTO_FILE}" ]]; then
+            FILES_TO_CHECK=$(grep -v '^\s*#' "${GITMAINAUTO_FILE}" | awk '{print $1}' | tr '\n' ' ')
+            if [[ -z "$FILES_TO_CHECK" ]]; then
+              echo "No valid files to check!"
+              exit 1
+            fi
+          else
+            echo "File list not found!"
+            exit 0
+          fi
+
+          # Check if any files in FILES_TO_CHECK have changed
+          for file in ${FILES_TO_CHECK}; do
+            if echo "$CHANGED_FILES" | grep -q "$file"; then
+              echo "File changed: $file"
+              echo "file_changed=true" >> $GITHUB_ENV
+              break
+            fi
+          done
+
+      # Step 7: Copy and push changes if any file was changed
+      - name: Auto-copy and Push Changes
+        if: env.file_changed == 'true'
+        run: |
+          #set -x
+          git checkout ${TARGET_BRANCH}
+
+          changes_made=false
+          for file in ${FILES_TO_CHECK}; do
+            if git checkout ${SOURCE_BRANCH} -- "$file"; then
+              changes_made=true
+            fi
+          done
+
+          # Check if any file was modified
+          if [[ "$(git status --porcelain)" ]]; then
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add .
+            git commit -m "[AUTO-GENERATE] Auto-merge from ${SOURCE_BRANCH} to ${TARGET_BRANCH}"
+            git push origin ${TARGET_BRANCH}
+          else
+            echo "No changes to push"
+            exit 0  # Return 0 if there are no changes
+          fi

@@ -1,5 +1,6 @@
 #!/bin/bash
 # GitHub settings
+#set -x
 GIT_ROOT="$(git rev-parse --show-toplevel)"
 GITHUB_TOKEN="${GITHUB_TOKEN}"
 GITHUB_REPO="YOUR_USERNAME/YOUR_REPOSITORY" # Format: username/repo
